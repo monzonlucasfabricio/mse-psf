@@ -105,17 +105,20 @@ int main(void)
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
   uint16_t sample = 0;
-  int16_t adc [ header.N ];
   DBG_CyclesCounterInit(CLOCK_SPEED);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  int16_t adc [ 256 ];
   while (1)
   {
 	  DBG_CyclesCounterReset();
 	  adc[sample] = (int16_t)ADC_Read(0)-512;
-	  uartWriteByteArray ( &huart2 ,(uint8_t* )&adc[sample] ,sizeof(adc[0]) );
+
+	  /*TODO: Check uartWriteByteArray*/
+	  uartWriteByteArray( &huart2 ,(uint8_t* )&adc[sample] ,sizeof(adc[0]));
+
 	  if ( ++sample==header.N ) {
 		 gpioToggle (GPIOB,LD1_Pin); // este led blinkea a fs/N
 		 sample = 0;
@@ -124,7 +127,7 @@ int main(void)
 		 uartWriteByteArray ( &huart2 ,(uint8_t*)&header ,sizeof(header ));
 		 ADC_Read(0);
 	  }
-	  gpioToggle (GPIOB,LD2_Pin); // este led blinkea a fs/2
+	  gpioToggle (GPIOB,LD3_Pin); // este led blinkea a fs/2
 	  while(DBG_CyclesCounterRead()< CLOCK_SPEED/header.fs);
     /* USER CODE END WHILE */
 

@@ -21,7 +21,7 @@ void ADC_SelectCH0(void)
 	ADC_ChannelConfTypeDef sConfig = {0};
 	sConfig.Channel = ADC_CHANNEL_0;
 	sConfig.Rank = 1;
-	sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES;
+	sConfig.SamplingTime = ADC_SAMPLETIME_28CYCLES;
 	if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
 	{
 		Error_Handler();
@@ -41,7 +41,7 @@ uint16_t ADC_Read(uint16_t adc)
 	}
 
 	HAL_ADC_Start(&hadc1);
-	HAL_ADC_PollForConversion(&hadc1, 100);
+	HAL_ADC_PollForConversion(&hadc1, 1000);
 	adc_value = HAL_ADC_GetValue(&hadc1);
 	HAL_ADC_Stop(&hadc1);
 	return adc_value;
@@ -57,15 +57,22 @@ bool DBG_CyclesCounterInit( uint32_t clockSpeed )
    return 1;
 }
 
+// Blocking Write 1 byte to TX FIFO
+void uartWriteByte( UART_HandleTypeDef *huart, const uint8_t value)
+{
+	uint8_t val = value;
+	HAL_UART_Transmit(huart, &val, 1, HAL_MAX_DELAY);
+}
+
+
 // Blocking, Send a Byte Array
 void uartWriteByteArray( UART_HandleTypeDef *huart, const uint8_t* byteArray, uint32_t byteArrayLen )
 {
    uint32_t i = 0;
    for( i=0; i<byteArrayLen; i++ ) {
-	   HAL_UART_Transmit(huart, byteArray, byteArrayLen, HAL_MAX_DELAY);
+	   uartWriteByte(huart, byteArray[i]);
    }
 }
-
 
 void gpioToggle(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin)
 {
