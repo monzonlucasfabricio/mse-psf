@@ -22,6 +22,7 @@
 #include "usart.h"
 #include "usb_otg.h"
 #include "gpio.h"
+#include "pds.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -30,6 +31,16 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
+
+/* Header Structure */
+struct header_struct {
+   char     head[4];
+   uint32_t id;
+   uint16_t N;
+   uint16_t fs ;
+   char     tail[4];
+} header={"head",0,256,5000,"tail"};
+
 
 /* USER CODE END PTD */
 
@@ -93,16 +104,30 @@ int main(void)
   MX_ADC1_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
-
+  uint16_t sample = 0;
+  int16_t adc [ header.N ];
+  DBG_CyclesCounterInit(CLOCK_SPEED);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+	  DBG_CyclesCounterReset();
+	  adc[sample] = (int16_t)ADC_Read(0)-512;
+	  uartWriteByteArray ( &huart2 ,(uint8_t* )&adc[sample] ,sizeof(adc[0]) );
+	  if ( ++sample==header.N ) {
+		 gpioToggle (GPIOB,LD1_Pin); // este led blinkea a fs/N
+		 sample = 0;
+		 //trigger(2);
+		 header.id++;
+		 uartWriteByteArray ( &huart2 ,(uint8_t*)&header ,sizeof(header ));
+		 ADC_Read(0);
+	  }
+	  gpioToggle (GPIOB,LD2_Pin); // este led blinkea a fs/2
+	  while(DBG_CyclesCounterRead()< CLOCK_SPEED/header.fs);
     /* USER CODE END WHILE */
-	print_debug_msg("Hola Mundo\n");
-	HAL_Delay(1000);
+
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
