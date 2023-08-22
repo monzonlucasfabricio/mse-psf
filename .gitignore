@@ -1,1 +1,4 @@
-clase1/py310
+.*
+clase1/py310/*
+clase1/stm32_project/.metadata/*
+psf_2023/*
