@@ -86,7 +86,7 @@ def update(t):
 
 #seleccionar si usar la biblioteca pyserial o leer desde un archivo log.bin
 if(STREAM_FILE[1]=="serial"):
-    streamFile = serial.Serial(port=STREAM_FILE[0],baudrate=460800,timeout=None)
+    streamFile = serial.Serial(port=STREAM_FILE[0],baudrate=921600,timeout=None)
 else:
     streamFile=open(STREAM_FILE[0],"rb",0)
 

@@ -32,14 +32,17 @@
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
 
-/* Header Structure */
+#define N_MUESTRAS  	512
+#define FREQ_MUESTREO	10000
+
+/* Header added to the stream */
 struct header_struct {
    char     head[4];
    uint32_t id;
    uint16_t N;
    uint16_t fs ;
    char     tail[4];
-} header={"head",0,256,5000,"tail"};
+} header={"head", 0, N_MUESTRAS, FREQ_MUESTREO, "tail"};
 
 
 /* USER CODE END PTD */
@@ -104,31 +107,52 @@ int main(void)
   MX_ADC1_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
+
   uint16_t sample = 0;
-  DBG_CyclesCounterInit(CLOCK_SPEED);
+  DBG_CyclesCounterInit(CLOCK_SPEED); // Enable the cycle counter
+  int16_t adc [N_MUESTRAS];
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  int16_t adc [ 256 ];
   while (1)
   {
+	  /* Reset cycle counter to 0 */
 	  DBG_CyclesCounterReset();
+
+	  /* Get the ADC sample */
 	  adc[sample] = (int16_t)ADC_Read(0)-512;
 
-	  /*TODO: Check uartWriteByteArray*/
-	  uartWriteByteArray( &huart2 ,(uint8_t* )&adc[sample] ,sizeof(adc[0]));
+	  /* Send the sample in an Array */
+	  uartWriteByteArray(&huart2, (uint8_t* )&adc[sample], sizeof(adc[0]));
 
+	  /* Increment the sample counter and check if we are in the last sample */
 	  if ( ++sample==header.N ) {
-		 gpioToggle (GPIOB,LD1_Pin); // este led blinkea a fs/N
+
+		 /* Blinks at fs/N frequency */
+		 gpioToggle (GPIOB,LD1_Pin);
+
+		 /* Reset the samples */
 		 sample = 0;
-		 //trigger(2);
+
+//		 trigger(2);
+
+		 /* Increment id */
 		 header.id++;
-		 uartWriteByteArray ( &huart2 ,(uint8_t*)&header ,sizeof(header ));
-		 ADC_Read(0);
+
+		 /* Send the header in an Array */
+		 uartWriteByteArray (&huart2, (uint8_t*)&header, sizeof(header));
+
+
+		 //ADC_Read(0);
 	  }
-	  gpioToggle (GPIOB,LD3_Pin); // este led blinkea a fs/2
-	  while(DBG_CyclesCounterRead()< CLOCK_SPEED/header.fs);
+	  /* Blinks at fs/2 frequency */
+	  gpioToggle (GPIOB,LD3_Pin);
+
+	  /* Wait until it completes the Cycles. 168.000.000/10.000 = 16.800 cycles */
+	  while(DBG_CyclesCounterRead() < CLOCK_SPEED/header.fs);
+
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

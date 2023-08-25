@@ -81,9 +81,9 @@ void gpioToggle(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin)
 
 void trigger(int16_t threshold)
 {
-   while((ADC_Read(CH1)-512)>threshold)
+   while((ADC_Read(CH0)-512)>threshold)
       ;
-   while((ADC_Read(CH1)-512)<threshold)
+   while((ADC_Read(CH0)-512)<threshold)
       ;
    return;
 }
