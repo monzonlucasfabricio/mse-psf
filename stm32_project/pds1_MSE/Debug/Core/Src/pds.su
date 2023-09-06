@@ -1,0 +1,7 @@
+../Core/Src/pds.c:19:6:ADC_SelectCH0	24	static
+../Core/Src/pds.c:31:10:ADC_Read	24	static
+../Core/Src/pds.c:51:6:DBG_CyclesCounterInit	16	static
+../Core/Src/pds.c:61:6:uartWriteByte	24	static
+../Core/Src/pds.c:69:6:uartWriteByteArray	32	static
+../Core/Src/pds.c:77:6:gpioToggle	16	static
+../Core/Src/pds.c:82:6:trigger	16	static
