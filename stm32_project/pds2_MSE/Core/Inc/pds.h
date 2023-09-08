@@ -28,5 +28,6 @@ uint16_t ADC_Read(uint16_t adc);
 bool DBG_CyclesCounterInit( uint32_t clockSpeed );
 void uartWriteByteArray( UART_HandleTypeDef *huart, const uint8_t* byteArray, uint32_t byteArrayLen );
 void gpioToggle(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin);
+void DAC_Write(DAC_HandleTypeDef *handle, uint16_t value);
 
 #endif /* INC_PDS_H_ */

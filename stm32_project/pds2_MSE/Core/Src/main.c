@@ -19,6 +19,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "adc.h"
+#include "dac.h"
 #include "usart.h"
 #include "usb_otg.h"
 #include "gpio.h"
@@ -43,6 +44,11 @@ struct header_struct {
    uint16_t fs ;
    char     tail[4];
 } header={"head", 0, N_MUESTRAS, FREQ_MUESTREO, "tail"};
+
+uint32_t tick   = 0;
+uint16_t tone   = 1000 ;
+uint16_t B      = 4500;
+uint16_t sweept = 10;
 
 
 /* USER CODE END PTD */
@@ -106,6 +112,7 @@ int main(void)
   MX_USB_OTG_FS_PCD_Init();
   MX_ADC1_Init();
   MX_USART2_UART_Init();
+  MX_DAC_Init();
   /* USER CODE BEGIN 2 */
 
   uint16_t sample = 0;
@@ -129,6 +136,8 @@ int main(void)
 
 	  float t = tick/(float)header.fs;
 	  tick++;
+
+	  DAC_Write(&hdac, 512*arm_sin_f32 (t*B/2*(t/sweept)*2*PI)+512);
 
 	  /* Increment the sample counter and check if we are in the last sample */
 	  if ( ++sample==header.N ) {

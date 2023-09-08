@@ -7,6 +7,7 @@
 
 #include "pds.h"
 #include "adc.h"
+#include "dac.h"
 
 #define DO  261.63
 #define RE  293.66
@@ -96,11 +97,23 @@ void trigger(int16_t threshold)
    return;
 }
 
-uint16_t DOm(float t){
+uint16_t DOm(float t)
+{
    return 512*0.4*arm_sin_f32 (2*PI*t*DO)+\
           512*0.2*arm_sin_f32 (2*PI*t*MI)+\
           512*0.3*arm_sin_f32 (2*PI*t*SOL)+512;
 }
 
+
+void DAC_Write(DAC_HandleTypeDef *handle, uint16_t value)
+{
+	// DAC is 12 bit so maximum value should be 4096
+	if( value > 4096 )
+	{
+		value = 4096; // Saturation
+	}
+
+	HAL_DAC_SetValue(handle, DAC1_CHANNEL_1, DAC_ALIGN_12B_R, value);
+}
 
 
