@@ -33,7 +33,7 @@
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
 
-#define N_MUESTRAS  	256
+#define N_MUESTRAS  	128
 #define FREQ_MUESTREO	10000
 
 /* Header added to the stream */
@@ -46,9 +46,9 @@ struct header_struct {
 } header={"head", 0, N_MUESTRAS, FREQ_MUESTREO, "tail"};
 
 uint32_t tick   = 0;
-uint16_t tone   = 1000 ;
+uint16_t tone   = 100 ;
 uint16_t B      = 4500;
-uint16_t sweept = 10;
+uint16_t sweept = 1;
 
 
 /* USER CODE END PTD */
@@ -137,8 +137,8 @@ int main(void)
 	  float t = tick/(float)header.fs;
 	  tick++;
 
-	  DAC_Write(&hdac, 512*arm_sin_f32 (t*B/2*(t/sweept)*2*PI)+512);
-
+//	  DAC_Write(&hdac, 512*arm_sin_f32 (t*B/2*(t/sweept)*2*PI)+512);
+	  DAC_Write(&hdac, DOm(t));
 	  /* Increment the sample counter and check if we are in the last sample */
 	  if ( ++sample==header.N ) {
 
