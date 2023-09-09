@@ -125,7 +125,8 @@ int main(void)
   uint16_t sample = 0;
   DBG_CyclesCounterInit(CLOCK_SPEED); // Enable the cycle counter
   int16_t adc [N_MUESTRAS];
-
+  float t = 0;
+  float32_t result = 0;
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -141,13 +142,13 @@ int main(void)
 	  /* Send the sample in an Array */
 	  uartWriteByteArray(&huart2, (uint8_t* )&adc[sample], sizeof(adc[0]));
 
-      float t=((tick%(sweept*header.fs))/(float)header.fs);
+      t=((tick%(sweept*header.fs))/(float)header.fs);
       tick++;
-      DAC_Write(&hdac, 512*arm_sin_f32 (t*B/2*(t/sweept)*2*PI)+512);
+      result = 512*arm_sin_f32 (t*B/2*(t/sweept)*2*PI)+512;
+      DAC_Write(&hdac, result);
 
 	  /* Increment the sample counter and check if we are in the last sample */
 	  if ( ++sample==header.N ) {
-
 		 DAC_Write( &hdac, 512);
 		 gpioToggle (GPIOB,LD1_Pin);
 		 arm_max_q15 ( adc, header.N, &header.maxValue,&header.maxIndex );
@@ -161,8 +162,8 @@ int main(void)
 		 /* Send the header in an Array */
 		 uartWriteByteArray (&huart2, (uint8_t*)&header, sizeof(header));
 
-
 		 //ADC_Read(CH0);
+		 sample = 0;
 	  }
 	  /* Blinks at fs/2 frequency */
 	  gpioToggle (GPIOB,LD3_Pin);
