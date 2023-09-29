@@ -70,8 +70,8 @@ all: main-build
 main-build: psf_1.elf secondary-outputs
 
 # Tool invocations
-psf_1.elf psf_1.map: $(OBJS) $(USER_OBJS) C:\Users\Lucas\Documents\dev\pds_MSE2\trabajos_practicos\C\STM32F429ZITX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "psf_1.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\Lucas\Documents\dev\pds_MSE2\trabajos_practicos\C\STM32F429ZITX_FLASH.ld" --specs=nosys.specs -Wl,-Map="psf_1.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+psf_1.elf psf_1.map: $(OBJS) $(USER_OBJS) C:\Users\Lucas\Documents\dev\pds_MSE2\trabajos_practicos\tp1\psf_1\STM32F429ZITX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "psf_1.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\Lucas\Documents\dev\pds_MSE2\trabajos_practicos\tp1\psf_1\STM32F429ZITX_FLASH.ld" --specs=nosys.specs -Wl,-Map="psf_1.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 

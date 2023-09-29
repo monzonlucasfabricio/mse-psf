@@ -36,6 +36,7 @@
 #define N_MUESTRAS  	256
 #define FREQ_MUESTREO	10000
 #define BITS 3
+#define LA440 440
 
 /* Header added to the stream */
 struct header_struct {
@@ -126,7 +127,11 @@ int main(void)
   DBG_CyclesCounterInit(CLOCK_SPEED); // Enable the cycle counter
   int16_t adc [N_MUESTRAS];
   float t = 0;
-//  float32_t result = 0;
+
+  uint32_t freq = LA440; // Frequency in Hz
+  uint32_t sampleRate = 44100; // DAC sample rate in Hz (adjust as needed)
+  uint32_t amplitude = 1024 / 2; // Half-scale amplitude
+
   /* USER CODE END 2 */
 
   /* Infinite loop */

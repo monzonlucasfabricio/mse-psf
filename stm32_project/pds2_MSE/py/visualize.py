@@ -2,11 +2,12 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from   matplotlib.animation import FuncAnimation
+import simpleaudio as sa
 import os
 import io
 import serial
 
-STREAM_FILE=("COM4","serial")
+STREAM_FILE=("/dev/ttyUSB3","serial")
 #STREAM_FILE=("log.bin","file")
 
 header = { "head": b"head", "id": 0, "N": 128, "fs": 10000, "tail":b"tail" }
@@ -28,16 +29,16 @@ def findHeader(f,h):
         data=bytearray(len(h["head"]))
         while data!=h["head"]:
             data+=f.read(1)
-            del data[0]
+            data[:]=data[-4:]
 
         h["id"] = readInt4File(f,4)
         h["N" ] = readInt4File(f)
         h["fs"] = readInt4File(f)
 
         data=bytearray(b'1234')
-        for i in range(len(h["tail"])):
+        for i in range(4):
             data+=f.read(1)
-            del data[0]
+            data[:]=data[-4:]
         find = data==h["tail"]
     print(h)
     return h["id"],h["N"],h["fs"]
@@ -67,8 +68,12 @@ def readSamples(adc,N,trigger=False,th=0):
         adc[i]=sample
         i=nextI
 
+def init():
+    return adcLn, fftLn
+
 def update(t):
     global header
+    #atento con esta linea
     flushStream ( streamFile,header )
     id,N,fs=findHeader ( streamFile,header )
     adc   = np.zeros(N)
@@ -82,16 +87,18 @@ def update(t):
     fftAxe.set_ylim ( 0 ,np.max(fft)+0.05)
     fftAxe.set_xlim ( 0 ,fs/2 )
     fftLn.set_data ( (fs/N )*fs*time ,fft)
+
     return adcLn, fftLn
 
 #seleccionar si usar la biblioteca pyserial o leer desde un archivo log.bin
 if(STREAM_FILE[1]=="serial"):
-    streamFile = serial.Serial(port=STREAM_FILE[0],baudrate=921600,timeout=None)
+    streamFile = serial.Serial(port=STREAM_FILE[0],baudrate=460800,timeout=None)
 else:
     streamFile=open(STREAM_FILE[0],"rb",0)
+    flushStream(streamFile,header)
 
-ani=FuncAnimation(fig,update,10000,init_func=None,blit=True,interval=1,repeat=True)
+ani=FuncAnimation(fig,update,128,init_func=init,blit=True,interval=1,repeat=True)
 plt.draw()
-# plt.get_current_fig_manager().window.showMaximized() #para QT5
+plt.get_current_fig_manager().window.showMaximized() #para QT5
 plt.show()
 streamFile.close()

@@ -117,13 +117,14 @@ class Signals():
         self.x = np.arange(0, muestras/freqS, 1/freqS)
 
         # np.sin is a sine function
-        self.y = np.sin(self.x*freq0 + phase)
+        self.y = np.sin(self.x*freq0*2*np.pi + phase)
 
         self.amp = amplitude
         self.ax[0][0].set_ylim(-self.amp*2, self.amp*2)
         self.ax[0][0].set_xlim(0, 10)
         self.ax[0][0].plot(self.x, self.y*self.amp, 'o-', label = 'Sine Wave {}Hz'.format(freq0))
-    
+        
+
     def create_square_wave(self, signal_dict = signals):
 
         # Get values from dictionary to plot the square wave

@@ -37,7 +37,7 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
  ../Core/Inc/usart.h ../Core/Inc/usb_otg.h ../Core/Inc/gpio.h \
  ../Core/Inc/pds.h ../Core/Inc/usart.h \
  ../Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f429xx.h \
- C:/Users/Lucas/Documents/dev/pds_MSE2/stm32_project/pds21_MSE/DSP/Include/arm_math.h
+ C:/Users/Lucas/Documents/dev/pds_MSE2/trabajos_practicos/tp1/psf_1/DSP/Include/arm_math.h
 ../Core/Inc/main.h:
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h:
 ../Core/Inc/stm32f4xx_hal_conf.h:
@@ -82,4 +82,4 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
 ../Core/Inc/pds.h:
 ../Core/Inc/usart.h:
 ../Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f429xx.h:
-C:/Users/Lucas/Documents/dev/pds_MSE2/stm32_project/pds21_MSE/DSP/Include/arm_math.h:
+C:/Users/Lucas/Documents/dev/pds_MSE2/trabajos_practicos/tp1/psf_1/DSP/Include/arm_math.h:

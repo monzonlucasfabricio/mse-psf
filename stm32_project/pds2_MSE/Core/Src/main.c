@@ -46,7 +46,7 @@ struct header_struct {
 } header={"head", 0, N_MUESTRAS, FREQ_MUESTREO, "tail"};
 
 uint32_t tick   = 0;
-uint16_t tone   = 100 ;
+uint16_t tone   = 440 ;
 uint16_t B      = 4500;
 uint16_t sweept = 1;
 
@@ -132,13 +132,12 @@ int main(void)
 	  adc[sample] = (int16_t)ADC_Read(0)-512;
 
 	  /* Send the sample in an Array */
-	  uartWriteByteArray(&huart2, (uint8_t* )&adc[sample], sizeof(adc[0]));
+//	  uartWriteByteArray(&huart2, (uint8_t* )&adc[sample], sizeof(adc[0]));
 
 	  float t = tick/(float)header.fs;
 	  tick++;
 
-//	  DAC_Write(&hdac, 512*arm_sin_f32 (t*B/2*(t/sweept)*2*PI)+512);
-	  DAC_Write(&hdac, DOm(t));
+      DAC_Write( &hdac, 2048*arm_sin_f32 (t*tone*2*PI)+2048);
 	  /* Increment the sample counter and check if we are in the last sample */
 	  if ( ++sample==header.N ) {
 
@@ -154,7 +153,7 @@ int main(void)
 		 header.id++;
 
 		 /* Send the header in an Array */
-		 uartWriteByteArray (&huart2, (uint8_t*)&header, sizeof(header));
+//		 uartWriteByteArray (&huart2, (uint8_t*)&header, sizeof(header));
 
 
 		 //ADC_Read(0);
