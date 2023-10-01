@@ -30,5 +30,6 @@ void uartWriteByteArray( UART_HandleTypeDef *huart, char* byteArray, uint32_t by
 void gpioToggle(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin);
 void DAC_Write(DAC_HandleTypeDef *handle, uint16_t value);
 uint16_t DOm(float t);
+void init_cfft_instance(arm_cfft_instance_q15* CS,int length);
 
 #endif /* INC_PDS_H_ */

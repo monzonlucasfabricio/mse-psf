@@ -56,6 +56,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/tpfinal/Lib/fonts}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/tpfinal/Lib/ili9341/Inc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/tpfinal/Lib/ili9341/Src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/tpfinal/Lib/filters}&quot;"/>
 								</option>
 								<inputType id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c.1054395461" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c"/>
 							</tool>

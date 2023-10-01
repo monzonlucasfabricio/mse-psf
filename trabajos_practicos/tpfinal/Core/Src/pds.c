@@ -116,3 +116,6 @@ void DAC_Write(DAC_HandleTypeDef *handle, uint16_t value)
 	HAL_DAC_SetValue(handle, DAC1_CHANNEL_1, DAC_ALIGN_12B_R, value);
 }
 
+
+
+

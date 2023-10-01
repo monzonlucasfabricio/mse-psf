@@ -69,7 +69,41 @@ uint16_t sweept = 10;
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
+void init_cfft_instance(arm_cfft_instance_q15* CS,int length)/*{{{*/
+{
+   switch(length){
+      case 16:
+         *CS=arm_cfft_sR_q15_len16;
+         break;
+      case 32:
+         *CS=arm_cfft_sR_q15_len32;
+         break;
+      case 64:
+         *CS=arm_cfft_sR_q15_len64;
+         break;
+      case 128:
+         *CS=arm_cfft_sR_q15_len128;
+         break;
+      case 256:
+         *CS=arm_cfft_sR_q15_len256;
+         break;
+      case 512:
+         *CS=arm_cfft_sR_q15_len512;
+         break;
+      case 1024:
+         *CS=arm_cfft_sR_q15_len1024;
+         break;
+      case 2048:
+         *CS=arm_cfft_sR_q15_len2048;
+         break;
+      case 4096:
+         *CS=arm_cfft_sR_q15_len4096;
+         break;
+      default:
+         *CS=arm_cfft_sR_q15_len128;
+   }
+   return;
+}/*}}}*/
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -130,7 +164,7 @@ int main(void)
 	/* USER CODE BEGIN 2 */
 
 	ili_init();
-	ili_rotate_display(1);
+	ili_rotate_display(3);
 	// Fiiling the entire screen with cyan color
 	ili_fill_screen(ILI_COLOR_DARKCYAN);
 
@@ -148,7 +182,7 @@ int main(void)
 	// 	ili_draw_char(rand() % 100 + 5, rand() % 100 + 60, (char)(rand() % 50 + 90), ILI_COLOR_RED, 0, &font_ubuntu_mono_24, 0);
 
 	// Write a string with solid background. Text color white, background color dark green
-	 ili_draw_string_withbg(30, 10, "PSF 2023 - FIR FILTER", ILI_COLOR_WHITE, ILI_COLOR_DARKGREEN, &font_ubuntu_mono_24);
+	//  ili_draw_string_withbg(30, 10, "PSF 2023 - FIR FILTER", ILI_COLOR_WHITE, ILI_COLOR_DARKGREEN, &font_ubuntu_mono_24);
 
 	// Draw a line between any two points
 	// ili_draw_line(4, 18, 200, 150, 1, ILI_COLOR_RED);
@@ -164,22 +198,20 @@ int main(void)
 //		ili_fill_color(ILI_COLOR_MAROON + i, (100+1) * (150+1));
 
 	create_cartesian_axis_for_plot();
-
-//	create_sine_wave(100);
-
-//	HAL_Delay(10000);
-	uint16_t sample = 0;
-	DBG_CyclesCounterInit(CLOCK_SPEED); // Enable the cycle counter
-//
-
-	float32_t val = 0;
-	float32_t t = 0;
-
-	sample_adc_and_show(0);
+//	create_sine_wave_2(1000);
+//	create_sine_wave_and_fir_freq(100);
+	create_sine_wave_and_fir(100);
 	/* USER CODE END 2 */
 
 	/* Infinite loop */
 	/* USER CODE BEGIN WHILE */
+
+
+	uint16_t sample = 0;
+	DBG_CyclesCounterInit(CLOCK_SPEED);
+	float32_t val = 0;
+	float32_t t = 0;
+
 	while (1)
 	{
 		/* Reset the cycle counter */

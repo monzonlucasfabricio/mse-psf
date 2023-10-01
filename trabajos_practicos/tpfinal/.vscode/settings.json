@@ -3,6 +3,9 @@
         "fonts.h": "c",
         "stm32f4xx_hal.h": "c",
         "font_ubuntu_mono_24": "c",
-        "arm_math.h": "c"
+        "arm_math.h": "c",
+        "spi.h": "c",
+        "main.h": "c",
+        "app.h": "c"
     }
 }

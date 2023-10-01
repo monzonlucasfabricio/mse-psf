@@ -7,12 +7,17 @@
 #include "arm_math.h"
 #include "font_ubuntu_mono_24.h"
 #include "font_microsoft_16.h"
+#include "arm_const_structs.h"
 
 #define X_START_AXIS 10
 #define X_END_AXIS 310
 #define Y_START_AXIS 80
 #define Y_END_AXIS 214
 
+void show_input_freq(uint16_t freq);
+void create_sine_wave_and_fir_freq(uint16_t tone);
+void create_sine_wave_2(uint16_t tone);
+void create_sine_wave_and_fir(uint16_t tone);
 void sample_adc_and_show(uint16_t channel);
 void create_sine_wave(uint16_t tone);
 void refresh_cartesian_axis(void);
