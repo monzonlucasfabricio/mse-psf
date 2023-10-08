@@ -81,10 +81,20 @@ void Error_Handler(void);
 /* Private defines -----------------------------------------------------------*/
 #define USER_Btn_Pin GPIO_PIN_13
 #define USER_Btn_GPIO_Port GPIOC
+#define USER_Btn_EXTI_IRQn EXTI15_10_IRQn
 #define LCD_CS_Pin GPIO_PIN_3
 #define LCD_CS_GPIO_Port GPIOF
 #define LCD_RST_Pin GPIO_PIN_5
 #define LCD_RST_GPIO_Port GPIOF
+#define BOTON3_Pin GPIO_PIN_6
+#define BOTON3_GPIO_Port GPIOF
+#define BOTON3_EXTI_IRQn EXTI9_5_IRQn
+#define BOTON2_Pin GPIO_PIN_7
+#define BOTON2_GPIO_Port GPIOF
+#define BOTON2_EXTI_IRQn EXTI9_5_IRQn
+#define BOTON1_Pin GPIO_PIN_8
+#define BOTON1_GPIO_Port GPIOF
+#define BOTON1_EXTI_IRQn EXTI9_5_IRQn
 #define MCO_Pin GPIO_PIN_0
 #define MCO_GPIO_Port GPIOH
 #define LCD_WR_Pin GPIO_PIN_0

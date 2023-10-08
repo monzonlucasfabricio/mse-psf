@@ -44,6 +44,8 @@
 #define FREQ_MUESTREO	100000
 #define BITS 0
 
+extern filter_t filter;
+
 /* Header added to the stream */
 struct header_struct {
    char     head[4];
@@ -168,53 +170,31 @@ int main(void)
 	ili_fill_screen(ILI_COLOR_DARKCYAN);
 
 	create_cartesian_axis_for_plot();
-	sample_adc_and_filter(0);
-//	create_sine_wave_2(100);
-//	create_sine_wave_and_fir_freq(100);
-//	create_sine_wave_and_fir(100);
+//	sample_adc_and_filter_band_pass(0);
+
+	filter = LOW_PASS;
+
 	/* USER CODE END 2 */
 
 	/* Infinite loop */
 	/* USER CODE BEGIN WHILE */
-
-
-	uint16_t sample = 0;
-	DBG_CyclesCounterInit(CLOCK_SPEED);
-	float32_t val = 0;
-	float32_t t = 0;
-
 	while (1)
 	{
-		/* Reset the cycle counter */
-		DBG_CyclesCounterReset();
-
-		t=sample/(float)header.fs;
-
-		val = 40*arm_sin_f32 (t*tone*2*PI) + 160;
-		uint16_t val16 = (uint16_t)val;
-
-		if (sample <= 300)
-		{
-			ili_draw_pixel(X_START_AXIS + sample, val, ILI_COLOR_WHITE);
-		}
-
-		/* Increment the sample counter and check if we are in the last sample */
-		if ( ++sample==header.N )
-		{
-			HAL_Delay(10);
-			sample = 0;
-
-
-			refresh_cartesian_axis();
-		}
-		/* Blinks at fs/2 frequency */
-		gpioToggle (GPIOB,LD3_Pin);
-
-		/* Wait until it completes the Cycles. 168.000.000/10.000 = 16.800 cycles */
-		while(DBG_CyclesCounterRead() < CLOCK_SPEED/header.fs);
-
-//		HAL_Delay(1000);
-
+      switch (filter)
+      {
+         case LOW_PASS:
+            sample_adc_and_filter_low_pass(0);
+            break;
+         case HIGH_PASS:
+            sample_adc_and_filter_high_pass(0);
+            break;
+         case BAND_PASS:
+            sample_adc_and_filter_band_pass(0);
+            break;
+         default:
+            sample_adc_and_filter_low_pass(0);
+            break;
+      }      
 		/* USER CODE END WHILE */
 
 		/* USER CODE BEGIN 3 */

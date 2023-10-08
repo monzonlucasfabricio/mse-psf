@@ -14,6 +14,15 @@
 #define Y_START_AXIS 80
 #define Y_END_AXIS 214
 
+typedef enum{
+   LOW_PASS,
+   HIGH_PASS,
+   BAND_PASS
+}filter_t;
+
+void sample_adc_and_filter_band_pass(uint16_t channel);
+void sample_adc_and_filter_low_pass(uint16_t channel);
+void sample_adc_and_filter_high_pass(uint16_t channel);
 void sample_adc_and_filter(uint16_t channel);
 void show_input_freq(uint16_t freq);
 void show_max_freq(uint16_t freq);

@@ -5,9 +5,14 @@
 #include "fir_band_pass_4_8_100k.h"
 #include "fir_band_pass_4_8_100k2.h"
 #include "fir_band_pass_1_2_10k.h"
+#include "fir_low_pass_1_15_10k.h"
+#include "fir_high_pass_1_15_10k.h"
+#include "fir_band_pass_05_15_10k.h"
 #include "pds.h"
 
 extern DAC_HandleTypeDef hdac;
+
+filter_t filter;
 
 #define A_NORMAL 60
 #define A_NORMAL_FFT 120
@@ -19,6 +24,7 @@ extern DAC_HandleTypeDef hdac;
 #define FFT_SAMPLES MAX_SAMPLES + 212
 #define SAMPLING_FREQ 10000
 #define START_DRAWING X_START_AXIS + 4
+
 
 void show_labels(void);
 void parse_amplitudes(int16_t arr[], uint16_t len);
@@ -49,7 +55,7 @@ void create_sine_wave(uint16_t tone)
 
     uint32_t steps = SAMPLING_FREQ/10;
     uint32_t freq = SAMPLING_FREQ*2;
-    /* We are goin to change the sample frequency to see how the T scale works */
+    /* We are going to change the sample frequency to see how the T scale works */
     while(freq >= SAMPLING_FREQ)
     {
 		for (uint16_t i = 0; i < MAX_SAMPLES; i++)
@@ -493,7 +499,7 @@ void sample_adc_and_filter1(uint16_t channel)
 	}
 }
 
-void sample_adc_and_filter(uint16_t channel)
+void sample_adc_and_filter_low_pass(uint16_t channel)
 {
 	DBG_CyclesCounterInit(CLOCK_SPEED);
 	uint16_t sample = 0;
@@ -501,7 +507,7 @@ void sample_adc_and_filter(uint16_t channel)
 	/* Sampling related functions */
 	int16_t adc [MAX_SAMPLES];
 	int16_t tmp [MAX_SAMPLES];
-	int16_t y	[MAX_SAMPLES + h6_LENGTH - 1]; // N = 512 , M = 65 => N+M-1 = 512+65-1 = 576
+	int16_t y	[MAX_SAMPLES + h7_LENGTH - 1]; // N = 512 , M = 65 => N+M-1 = 512+65-1 = 576
 
 	/* Arrays for FFT */
 	/* fftOut have MAX_SAMPLES*2 because is real and imag values */
@@ -516,7 +522,11 @@ void sample_adc_and_filter(uint16_t channel)
 	q15_t fftOut2 		[(MAX_SAMPLES)*2];		// 1024
 	q15_t fftIn2		[(MAX_SAMPLES)];		// 512
 
-	while(1)
+	uint16_t k = 0;
+
+	parse_amplitudes(HAbs7, H7_PADD_LENGTH);
+
+	while(filter == LOW_PASS)
 	{
 		/* Reset the cycle counter */
 		DBG_CyclesCounterReset();
@@ -528,48 +538,243 @@ void sample_adc_and_filter(uint16_t channel)
 		if (++sample == MAX_SAMPLES)
 		{
 
-			arm_conv_q15(adc, MAX_SAMPLES, h6, h6_LENGTH, y);
+			arm_conv_q15(adc, MAX_SAMPLES, h7, h7_LENGTH, y);
 
-			uint16_t k = 0;
-			for (uint16_t j = 0; j < MAX_SAMPLES + h6_LENGTH - 1; j++)
+			k = 0;
+			for (uint16_t j = 0; j < MAX_SAMPLES + h7_LENGTH - 1; j++)
 			{
-				if (j < h6_LENGTH)
+				if (j < h7_LENGTH)
+				{
+					fftIn2[k] = 0;
+					tmp[k] = 0;
+				}
+				else if ( j > h7_LENGTH && j < MAX_SAMPLES)
 				{
 					fftIn2[k] = y[j];
+					tmp[k] = y[j];
 				}
 				k++;
 			}
 
-			for (uint16_t i = 0; i < MAX_SAMPLES + h6_LENGTH - 1; i++)
-			{
-				DAC_Write(&hdac, y[i]); 
-			}
-
 			arm_rfft_init_q15(&S, MAX_SAMPLES, 0, 1);
 			arm_rfft_q15(&S, fftIn, fftOut);
-			arm_cmplx_mag_squared_q15(fftOut, fftMag, MAX_SAMPLES/2 + 1);
+//			arm_cmplx_mag_squared_q15(fftOut, fftMag, MAX_SAMPLES/2 + 1);
 
 			arm_rfft_init_q15(&S2, MAX_SAMPLES, 0, 1);
 			arm_rfft_q15(&S, fftIn2, fftOut2);
-			arm_cmplx_mag_squared_q15(fftOut2, fftMag2, MAX_SAMPLES/2 + 1);
+//			arm_cmplx_mag_squared_q15(fftOut2, fftMag2, MAX_SAMPLES/2 + 1);
 
-//			parse_amplitudes(y,MAX_SAMPLES + h6_LENGTH - 1);
-			parse_amplitudes(fftOut, (MAX_SAMPLES)*2);
-			parse_amplitudes(fftOut2, (MAX_SAMPLES)*2);
+			parse_amplitudes(tmp, MAX_SAMPLES);
+			parse_amplitudes_fft(fftOut, MAX_SAMPLES);
+			parse_amplitudes_fft(fftOut2, MAX_SAMPLES);
 
 			for (uint16_t i = 0; i < SAMPLES_TO_SHOW; i++)
 			{
-//				ili_draw_pixel(START_DRAWING + i	, y[i] - (y[i]*2) + OFFSET, ILI_COLOR_WHITE);
-//				ili_draw_pixel(START_DRAWING + i + 1, y[i] - (y[i]*2) + OFFSET, ILI_COLOR_WHITE);
+				ili_draw_pixel(START_DRAWING + i	, tmp[i] - (tmp[i]*2) + OFFSET, ILI_COLOR_WHITE);
+				ili_draw_pixel(START_DRAWING + i + 1, tmp[i] - (tmp[i]*2) + OFFSET, ILI_COLOR_WHITE);
 
-				/* Draw lineas for every frequency */
-				 draw_fft(START_DRAWING + i, fftOut[i], ILI_COLOR_BLUE); // FFT from the signal filtered
-				 draw_fft(START_DRAWING + i, fftOut2[i], ILI_COLOR_RED); // FFT from the signal not filtered
+				ili_draw_pixel(START_DRAWING + i, HAbs7[i/2] - (HAbs7[i/2]*2) + OFFSET, ILI_COLOR_GREEN);
+				ili_draw_pixel(START_DRAWING + i, HAbs7[i/2]*1.2 - (HAbs7[i/2]*2.2) + OFFSET, ILI_COLOR_GREEN);
+
+				/* Draw lines for every frequency */
+				draw_fft(START_DRAWING + i, fftOut[i], ILI_COLOR_BLUE); // FFT from the signal filtered
+				draw_fft(START_DRAWING + i, fftOut2[i], ILI_COLOR_RED); // FFT from the signal not filtered
+
 			}
 			refresh_cartesian_axis();
 			sample = 0;
 		}
 
+		while(DBG_CyclesCounterRead() < CLOCK_SPEED/SAMPLING_FREQ);
+	}
+}
+
+void sample_adc_and_filter_high_pass(uint16_t channel)
+{
+	DBG_CyclesCounterInit(CLOCK_SPEED);
+	uint16_t sample = 0;
+
+	/* Sampling related functions */
+	int16_t adc [MAX_SAMPLES];
+	int16_t tmp [MAX_SAMPLES];
+	int16_t y	[MAX_SAMPLES + h8_LENGTH - 1]; // N = 512 , M = 65 => N+M-1 = 512+65-1 = 576
+
+	/* Arrays for FFT */
+	/* fftOut have MAX_SAMPLES*2 because is real and imag values */
+	/* Necesito potencia de 2 para que funcione. Entonces FFT_SAMPLES es 512 */
+	arm_rfft_instance_q15 S;
+	q15_t fftMag 		[(MAX_SAMPLES)/2 + 1]; 	// 257
+	q15_t fftOut 		[(MAX_SAMPLES)*2];     	// 1024
+	q15_t fftIn			[(MAX_SAMPLES)];		// 512
+
+	arm_rfft_instance_q15 S2;
+	q15_t fftMag2 		[(MAX_SAMPLES)/2 + 1];	// 257
+	q15_t fftOut2 		[(MAX_SAMPLES)*2];		// 1024
+	q15_t fftIn2		[(MAX_SAMPLES)];		// 512
+
+	uint16_t k = 0;
+
+	parse_amplitudes(HAbs8, H8_PADD_LENGTH);
+
+	while(filter == HIGH_PASS)
+	{
+		/* Reset the cycle counter */
+		DBG_CyclesCounterReset();
+
+		/* ADC[512] -> Is going to sample 512 values before doing something with it */
+		adc[sample] = (int16_t)ADC_Read(0) - 2048;
+		fftIn[sample] = adc[sample];
+
+		if (++sample == MAX_SAMPLES)
+		{
+
+			arm_conv_q15(adc, MAX_SAMPLES, h8, h8_LENGTH, y);
+
+			k = 0;
+			for (uint16_t j = 0; j < MAX_SAMPLES + h8_LENGTH - 1; j++)
+			{
+				if (j < h8_LENGTH)
+				{
+					fftIn2[k] = 0;
+					tmp[k] = 0;
+				}
+				else if ( j > h8_LENGTH && j < MAX_SAMPLES)
+				{
+					fftIn2[k] = y[j];
+					tmp[k] = y[j];
+				}
+				k++;
+			}
+
+			arm_rfft_init_q15(&S, MAX_SAMPLES, 0, 1);
+			arm_rfft_q15(&S, fftIn, fftOut);
+//			arm_cmplx_mag_squared_q15(fftOut, fftMag, MAX_SAMPLES/2 + 1);
+
+			arm_rfft_init_q15(&S2, MAX_SAMPLES, 0, 1);
+			arm_rfft_q15(&S, fftIn2, fftOut2);
+//			arm_cmplx_mag_squared_q15(fftOut2, fftMag2, MAX_SAMPLES/2 + 1);
+
+			parse_amplitudes(tmp, MAX_SAMPLES);
+			parse_amplitudes_fft(fftOut, MAX_SAMPLES);
+			parse_amplitudes_fft(fftOut2, MAX_SAMPLES);
+
+			for (uint16_t i = 0; i < SAMPLES_TO_SHOW - 5 ; i++)
+			{
+				ili_draw_pixel(START_DRAWING + i	, tmp[i] - (tmp[i]*2) + OFFSET, ILI_COLOR_WHITE);
+				ili_draw_pixel(START_DRAWING + i, tmp[i] - (tmp[i]*2) + OFFSET, ILI_COLOR_WHITE);
+
+				ili_draw_pixel(START_DRAWING + i, HAbs8[i-40] - (HAbs8[i-40]*2) + OFFSET, ILI_COLOR_GREEN);
+				ili_draw_pixel(START_DRAWING + i, HAbs8[i-40]*1.2 - (HAbs8[i-40]*2.2) + OFFSET, ILI_COLOR_GREEN);
+
+				/* Draw lines for every frequency */
+				draw_fft(START_DRAWING + i, fftOut[i], ILI_COLOR_BLUE); // FFT from the signal filtered
+				draw_fft(START_DRAWING + i, fftOut2[i], ILI_COLOR_RED); // FFT from the signal not filtered
+
+			}
+
+			refresh_cartesian_axis();
+			sample = 0;
+		}
+//		DAC_Write(&hdac, tmp[sample]);
+		while(DBG_CyclesCounterRead() < CLOCK_SPEED/SAMPLING_FREQ);
+	}
+}
+
+
+void sample_adc_and_filter_band_pass(uint16_t channel)
+{
+	DBG_CyclesCounterInit(CLOCK_SPEED);
+	uint16_t sample = 0;
+
+	/* Sampling related functions */
+	int16_t adc [MAX_SAMPLES];
+	int16_t tmp [MAX_SAMPLES];
+	int16_t y	[MAX_SAMPLES + h9_LENGTH - 1]; // N = 512 , M = 65 => N+M-1 = 512+65-1 = 576
+
+	/* Arrays for FFT */
+	/* fftOut have MAX_SAMPLES*2 because is real and imag values */
+	/* Necesito potencia de 2 para que funcione. Entonces FFT_SAMPLES es 512 */
+	arm_rfft_instance_q15 S;
+	q15_t fftMag 		[(MAX_SAMPLES)/2 + 1]; 	// 257
+	q15_t fftOut 		[(MAX_SAMPLES)*2];     	// 1024
+	q15_t fftIn			[(MAX_SAMPLES)];		// 512
+
+	arm_rfft_instance_q15 S2;
+	q15_t fftMag2 		[(MAX_SAMPLES)/2 + 1];	// 257
+	q15_t fftOut2 		[(MAX_SAMPLES)*2];		// 1024
+	q15_t fftIn2		[(MAX_SAMPLES)];		// 512
+
+	uint16_t k = 0;
+
+	parse_amplitudes(HAbs9, H9_PADD_LENGTH);
+
+	int16_t f_fundamental;
+	q15_t maxValue;
+	uint32_t maxIndex;
+
+	while(filter == BAND_PASS)
+	{
+		/* Reset the cycle counter */
+		DBG_CyclesCounterReset();
+
+		/* ADC[512] -> Is going to sample 512 values before doing something with it */
+		adc[sample] = (int16_t)ADC_Read(0) - 2048;
+		fftIn[sample] = adc[sample];
+
+		if (++sample == MAX_SAMPLES)
+		{
+
+			arm_conv_q15(adc, MAX_SAMPLES, h9, h9_LENGTH, y);
+
+			k = 0;
+			for (uint16_t j = 0; j < MAX_SAMPLES + h9_LENGTH - 1; j++)
+			{
+				if (j < h9_LENGTH)
+				{
+					fftIn2[k] = 0;
+					tmp[k] = 0;
+				}
+				else if ( j > h9_LENGTH && j < MAX_SAMPLES)
+				{
+					fftIn2[k] = y[j];
+					tmp[k] = y[j];
+				}
+				k++;
+			}
+
+			arm_rfft_init_q15(&S, MAX_SAMPLES, 0, 1);
+			arm_rfft_q15(&S, fftIn, fftOut);
+			arm_cmplx_mag_squared_q15(fftOut, fftMag, MAX_SAMPLES/2 + 1);
+			arm_max_q15(fftMag, MAX_SAMPLES/2 + 1, &maxValue, &maxIndex);
+
+//			f_fundamental = (fftMag[maxIndex]/(float)MAX_SAMPLES)*(float)SAMPLING_FREQ;
+
+			arm_rfft_init_q15(&S2, MAX_SAMPLES, 0, 1);
+			arm_rfft_q15(&S, fftIn2, fftOut2);
+//			arm_cmplx_mag_squared_q15(fftOut2, fftMag2, MAX_SAMPLES/2 + 1);
+
+			parse_amplitudes(tmp, MAX_SAMPLES);
+			parse_amplitudes_fft(fftOut, MAX_SAMPLES);
+			parse_amplitudes_fft(fftOut2, MAX_SAMPLES);
+
+			for (uint16_t i = 0; i < SAMPLES_TO_SHOW - 5 ; i++)
+			{
+				ili_draw_pixel(START_DRAWING + i	, tmp[i] - (tmp[i]*2) + OFFSET, ILI_COLOR_WHITE);
+				ili_draw_pixel(START_DRAWING + i, tmp[i] - (tmp[i]*2) + OFFSET, ILI_COLOR_WHITE);
+
+				ili_draw_pixel(START_DRAWING + i, HAbs9[i/2+10] - (HAbs9[i/2+10]*2) + OFFSET, ILI_COLOR_GREEN);
+				ili_draw_pixel(START_DRAWING + i, HAbs9[i/2+10]*1.2 - (HAbs9[i/2+10]*2.2) + OFFSET, ILI_COLOR_GREEN);
+
+				/* Draw lines for every frequency */
+				draw_fft(START_DRAWING + i, fftOut[i], ILI_COLOR_BLUE); // FFT from the signal filtered
+				draw_fft(START_DRAWING + i, fftOut2[i], ILI_COLOR_RED); // FFT from the signal not filtered
+
+			}
+
+			refresh_cartesian_axis();
+			sample = 0;
+		}
+//		DAC_Write(&hdac, tmp[sample]);
 		while(DBG_CyclesCounterRead() < CLOCK_SPEED/SAMPLING_FREQ);
 	}
 }
@@ -621,8 +826,8 @@ void show_labels(void)
 {
 	ili_draw_string_withbg(10, 50, "F0:", ILI_COLOR_WHITE, ILI_COLOR_BLACK,&font_microsoft_16);
 	ili_draw_string_withbg(80, 50, "Hz", ILI_COLOR_WHITE, ILI_COLOR_BLACK,&font_microsoft_16);
-	ili_draw_string_withbg(120, 50,"FS:100kHz", ILI_COLOR_WHITE, ILI_COLOR_BLACK,&font_microsoft_16);
-	ili_draw_string_withbg(220, 50,"MAX:", ILI_COLOR_WHITE, ILI_COLOR_BLACK,&font_microsoft_16);
+	ili_draw_string_withbg(120, 50,"FS:10kHz", ILI_COLOR_WHITE, ILI_COLOR_BLACK,&font_microsoft_16);
+	ili_draw_string_withbg(220, 50,"", ILI_COLOR_WHITE, ILI_COLOR_BLACK,&font_microsoft_16);
 }
 
 void clear_input_freq(void)
@@ -649,4 +854,24 @@ void create_axis_lines(void)
 
 	/* X axis numbers */
 	ili_draw_string(X_START_AXIS, Y_END_AXIS + 4 , "0  .5   1       2       3       4       5   5.5   6", ILI_COLOR_WHITE,&font_microsoft_16);
+}
+
+
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+	if(GPIO_Pin == BOTON1_Pin)
+	{
+		HAL_GPIO_TogglePin(LD1_GPIO_Port, LD1_Pin);
+		filter = LOW_PASS;
+	}
+	else if(GPIO_Pin == BOTON2_Pin)
+	{
+		HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
+		filter = HIGH_PASS;
+	}
+	else
+	{
+		HAL_GPIO_TogglePin(LD3_GPIO_Port, LD3_Pin);
+		filter = BAND_PASS;
+	}
 }
