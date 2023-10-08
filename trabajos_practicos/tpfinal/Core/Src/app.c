@@ -525,6 +525,7 @@ void sample_adc_and_filter_low_pass(uint16_t channel)
 	uint16_t k = 0;
 
 	parse_amplitudes(HAbs7, H7_PADD_LENGTH);
+	int16_t tmpVal = 0;
 
 	while(filter == LOW_PASS)
 	{
@@ -539,6 +540,13 @@ void sample_adc_and_filter_low_pass(uint16_t channel)
 		{
 
 			arm_conv_q15(adc, MAX_SAMPLES, h7, h7_LENGTH, y);
+
+			/* Arrange the values */
+			for (uint16_t i = 0; i < MAX_SAMPLES + h7_LENGTH; i++)
+			{
+				tmpVal = y[i] - (y[i]*2) + OFFSET;
+				y[i] = tmpVal;
+			}
 
 			k = 0;
 			for (uint16_t j = 0; j < MAX_SAMPLES + h7_LENGTH - 1; j++)
@@ -558,27 +566,25 @@ void sample_adc_and_filter_low_pass(uint16_t channel)
 
 			arm_rfft_init_q15(&S, MAX_SAMPLES, 0, 1);
 			arm_rfft_q15(&S, fftIn, fftOut);
-//			arm_cmplx_mag_squared_q15(fftOut, fftMag, MAX_SAMPLES/2 + 1);
 
 			arm_rfft_init_q15(&S2, MAX_SAMPLES, 0, 1);
 			arm_rfft_q15(&S, fftIn2, fftOut2);
-//			arm_cmplx_mag_squared_q15(fftOut2, fftMag2, MAX_SAMPLES/2 + 1);
 
 			parse_amplitudes(tmp, MAX_SAMPLES);
 			parse_amplitudes_fft(fftOut, MAX_SAMPLES);
 			parse_amplitudes_fft(fftOut2, MAX_SAMPLES);
 
-			for (uint16_t i = 0; i < SAMPLES_TO_SHOW; i++)
+			for (uint16_t i = 0; i < SAMPLES_TO_SHOW - 5; i++)
 			{
-				ili_draw_pixel(START_DRAWING + i	, tmp[i] - (tmp[i]*2) + OFFSET, ILI_COLOR_WHITE);
-				ili_draw_pixel(START_DRAWING + i + 1, tmp[i] - (tmp[i]*2) + OFFSET, ILI_COLOR_WHITE);
+				ili_draw_pixel(START_DRAWING + i	, tmp[i] + OFFSET, ILI_COLOR_WHITE);
+				ili_draw_pixel(START_DRAWING + i + 1, tmp[i] + OFFSET, ILI_COLOR_WHITE);
 
 				ili_draw_pixel(START_DRAWING + i, HAbs7[i/2] - (HAbs7[i/2]*2) + OFFSET, ILI_COLOR_GREEN);
 				ili_draw_pixel(START_DRAWING + i, HAbs7[i/2]*1.2 - (HAbs7[i/2]*2.2) + OFFSET, ILI_COLOR_GREEN);
 
 				/* Draw lines for every frequency */
-				draw_fft(START_DRAWING + i, fftOut[i], ILI_COLOR_BLUE); // FFT from the signal filtered
-				draw_fft(START_DRAWING + i, fftOut2[i], ILI_COLOR_RED); // FFT from the signal not filtered
+				draw_fft(START_DRAWING + i, fftOut[i + 7], ILI_COLOR_BLUE); // FFT from the signal filtered
+				draw_fft(START_DRAWING + i, fftOut2[i + 7], ILI_COLOR_RED); // FFT from the signal not filtered
 
 			}
 			refresh_cartesian_axis();
@@ -615,6 +621,7 @@ void sample_adc_and_filter_high_pass(uint16_t channel)
 	uint16_t k = 0;
 
 	parse_amplitudes(HAbs8, H8_PADD_LENGTH);
+	int16_t tmpVal = 0;
 
 	while(filter == HIGH_PASS)
 	{
@@ -629,6 +636,13 @@ void sample_adc_and_filter_high_pass(uint16_t channel)
 		{
 
 			arm_conv_q15(adc, MAX_SAMPLES, h8, h8_LENGTH, y);
+
+			/* Arrange the values */
+			for (uint16_t i = 0; i < MAX_SAMPLES + h8_LENGTH; i++)
+			{
+				tmpVal = y[i] - (y[i]*2) + OFFSET;
+				y[i] = tmpVal;
+			}
 
 			k = 0;
 			for (uint16_t j = 0; j < MAX_SAMPLES + h8_LENGTH - 1; j++)
@@ -648,11 +662,9 @@ void sample_adc_and_filter_high_pass(uint16_t channel)
 
 			arm_rfft_init_q15(&S, MAX_SAMPLES, 0, 1);
 			arm_rfft_q15(&S, fftIn, fftOut);
-//			arm_cmplx_mag_squared_q15(fftOut, fftMag, MAX_SAMPLES/2 + 1);
 
 			arm_rfft_init_q15(&S2, MAX_SAMPLES, 0, 1);
 			arm_rfft_q15(&S, fftIn2, fftOut2);
-//			arm_cmplx_mag_squared_q15(fftOut2, fftMag2, MAX_SAMPLES/2 + 1);
 
 			parse_amplitudes(tmp, MAX_SAMPLES);
 			parse_amplitudes_fft(fftOut, MAX_SAMPLES);
@@ -660,15 +672,15 @@ void sample_adc_and_filter_high_pass(uint16_t channel)
 
 			for (uint16_t i = 0; i < SAMPLES_TO_SHOW - 5 ; i++)
 			{
-				ili_draw_pixel(START_DRAWING + i	, tmp[i] - (tmp[i]*2) + OFFSET, ILI_COLOR_WHITE);
-				ili_draw_pixel(START_DRAWING + i, tmp[i] - (tmp[i]*2) + OFFSET, ILI_COLOR_WHITE);
+				ili_draw_pixel(START_DRAWING + i, tmp[i] + OFFSET, ILI_COLOR_WHITE);
+				ili_draw_pixel(START_DRAWING + i + 1, tmp[i] + OFFSET, ILI_COLOR_WHITE);
 
 				ili_draw_pixel(START_DRAWING + i, HAbs8[i-40] - (HAbs8[i-40]*2) + OFFSET, ILI_COLOR_GREEN);
 				ili_draw_pixel(START_DRAWING + i, HAbs8[i-40]*1.2 - (HAbs8[i-40]*2.2) + OFFSET, ILI_COLOR_GREEN);
 
 				/* Draw lines for every frequency */
-				draw_fft(START_DRAWING + i, fftOut[i], ILI_COLOR_BLUE); // FFT from the signal filtered
-				draw_fft(START_DRAWING + i, fftOut2[i], ILI_COLOR_RED); // FFT from the signal not filtered
+				draw_fft(START_DRAWING + i, fftOut[i + 7], ILI_COLOR_BLUE); // FFT from the signal filtered
+				draw_fft(START_DRAWING + i, fftOut2[i + 7], ILI_COLOR_RED); // FFT from the signal not filtered
 
 			}
 
@@ -711,6 +723,7 @@ void sample_adc_and_filter_band_pass(uint16_t channel)
 	int16_t f_fundamental;
 	q15_t maxValue;
 	uint32_t maxIndex;
+	int16_t tmpVal;
 
 	while(filter == BAND_PASS)
 	{
@@ -725,6 +738,13 @@ void sample_adc_and_filter_band_pass(uint16_t channel)
 		{
 
 			arm_conv_q15(adc, MAX_SAMPLES, h9, h9_LENGTH, y);
+
+			/* Arrange the values */
+			for (uint16_t i = 0; i < MAX_SAMPLES + h9_LENGTH; i++)
+			{
+				tmpVal = y[i] - (y[i]*2) + OFFSET;
+				y[i] = tmpVal;
+			}
 
 			k = 0;
 			for (uint16_t j = 0; j < MAX_SAMPLES + h9_LENGTH - 1; j++)
@@ -744,14 +764,9 @@ void sample_adc_and_filter_band_pass(uint16_t channel)
 
 			arm_rfft_init_q15(&S, MAX_SAMPLES, 0, 1);
 			arm_rfft_q15(&S, fftIn, fftOut);
-			arm_cmplx_mag_squared_q15(fftOut, fftMag, MAX_SAMPLES/2 + 1);
-			arm_max_q15(fftMag, MAX_SAMPLES/2 + 1, &maxValue, &maxIndex);
-
-//			f_fundamental = (fftMag[maxIndex]/(float)MAX_SAMPLES)*(float)SAMPLING_FREQ;
 
 			arm_rfft_init_q15(&S2, MAX_SAMPLES, 0, 1);
 			arm_rfft_q15(&S, fftIn2, fftOut2);
-//			arm_cmplx_mag_squared_q15(fftOut2, fftMag2, MAX_SAMPLES/2 + 1);
 
 			parse_amplitudes(tmp, MAX_SAMPLES);
 			parse_amplitudes_fft(fftOut, MAX_SAMPLES);
@@ -759,15 +774,16 @@ void sample_adc_and_filter_band_pass(uint16_t channel)
 
 			for (uint16_t i = 0; i < SAMPLES_TO_SHOW - 5 ; i++)
 			{
-				ili_draw_pixel(START_DRAWING + i	, tmp[i] - (tmp[i]*2) + OFFSET, ILI_COLOR_WHITE);
-				ili_draw_pixel(START_DRAWING + i, tmp[i] - (tmp[i]*2) + OFFSET, ILI_COLOR_WHITE);
+				ili_draw_pixel(START_DRAWING + i	, tmp[i] + OFFSET, ILI_COLOR_WHITE);
+				ili_draw_pixel(START_DRAWING + i + 1, tmp[i] + OFFSET, ILI_COLOR_WHITE);
+				ili_draw_pixel(START_DRAWING + i + 2, tmp[i] + OFFSET, ILI_COLOR_WHITE);
 
 				ili_draw_pixel(START_DRAWING + i, HAbs9[i/2+10] - (HAbs9[i/2+10]*2) + OFFSET, ILI_COLOR_GREEN);
 				ili_draw_pixel(START_DRAWING + i, HAbs9[i/2+10]*1.2 - (HAbs9[i/2+10]*2.2) + OFFSET, ILI_COLOR_GREEN);
 
 				/* Draw lines for every frequency */
-				draw_fft(START_DRAWING + i, fftOut[i], ILI_COLOR_BLUE); // FFT from the signal filtered
-				draw_fft(START_DRAWING + i, fftOut2[i], ILI_COLOR_RED); // FFT from the signal not filtered
+				draw_fft(START_DRAWING + i, fftOut[i + 7], ILI_COLOR_BLUE); // FFT from the signal filtered
+				draw_fft(START_DRAWING + i, fftOut2[i + 7], ILI_COLOR_RED); // FFT from the signal not filtered
 
 			}
 
@@ -824,10 +840,14 @@ void show_input_freq(uint16_t freq)
 
 void show_labels(void)
 {
-	ili_draw_string_withbg(10, 50, "F0:", ILI_COLOR_WHITE, ILI_COLOR_BLACK,&font_microsoft_16);
-	ili_draw_string_withbg(80, 50, "Hz", ILI_COLOR_WHITE, ILI_COLOR_BLACK,&font_microsoft_16);
-	ili_draw_string_withbg(120, 50,"FS:10kHz", ILI_COLOR_WHITE, ILI_COLOR_BLACK,&font_microsoft_16);
-	ili_draw_string_withbg(220, 50,"", ILI_COLOR_WHITE, ILI_COLOR_BLACK,&font_microsoft_16);
+	ili_draw_string_withbg(10, 50, "  ", ILI_COLOR_BLUE, ILI_COLOR_BLUE,&font_microsoft_16);
+	ili_draw_string_withbg(20, 50, "FFT In", ILI_COLOR_WHITE, ILI_COLOR_BLACK,&font_microsoft_16);
+	ili_draw_string_withbg(80, 50, "  ", ILI_COLOR_RED, ILI_COLOR_RED,&font_microsoft_16);
+	ili_draw_string_withbg(90, 50, "FFT Out", ILI_COLOR_WHITE, ILI_COLOR_BLACK,&font_microsoft_16);
+	ili_draw_string_withbg(165, 50, "  ", ILI_COLOR_GREEN, ILI_COLOR_GREEN,&font_microsoft_16);
+	ili_draw_string_withbg(175, 50, "Filter", ILI_COLOR_WHITE, ILI_COLOR_BLACK,&font_microsoft_16);
+	ili_draw_string_withbg(230, 50, "  ", ILI_COLOR_WHITE, ILI_COLOR_WHITE,&font_microsoft_16);
+	ili_draw_string_withbg(240, 50, "Output", ILI_COLOR_WHITE, ILI_COLOR_BLACK,&font_microsoft_16);
 }
 
 void clear_input_freq(void)
@@ -853,7 +873,7 @@ void create_axis_lines(void)
 	ili_draw_line(X_START_AXIS, Y_END_AXIS , X_END_AXIS , Y_END_AXIS, 4, ILI_COLOR_WHITE);
 
 	/* X axis numbers */
-	ili_draw_string(X_START_AXIS, Y_END_AXIS + 4 , "0  .5   1       2       3       4       5   5.5   6", ILI_COLOR_WHITE,&font_microsoft_16);
+	ili_draw_string(X_START_AXIS, Y_END_AXIS + 4 , "0                    1                      2                     3kHz", ILI_COLOR_WHITE,&font_microsoft_16);
 }
 
 

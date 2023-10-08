@@ -29,43 +29,12 @@
 #include "app.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-/*
- * 	Escriba un codigo en C para la CIAA que dado q7_t a= 0x40 y q7_t b=0x23,
- *	calcule q7_t c = a*b e imprima el resultado en hexadecimal y decimal.
- *	Indique su política con respecto al redondeo
- *
-*/
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-
-#define N_MUESTRAS  	310
-#define FREQ_MUESTREO	100000
-#define BITS 0
-
 extern filter_t filter;
-
-/* Header added to the stream */
-struct header_struct {
-   char     head[4];
-   uint32_t id;
-   uint16_t N;
-   uint16_t fs ;
-   uint32_t maxIndex;
-   uint32_t minIndex;
-   q15_t    maxValue;
-   q15_t    minValue;
-   q15_t    rms;
-   char     tail[4];
-} header={"head",0,310,10000,0,0,0,0,0,"tail"};
-
-
-uint32_t tick   = 0   ;
-uint16_t tone   = 100 ;
-uint16_t B      = 4000;
-uint16_t sweept = 10;
-
 
 /* USER CODE END PTD */
 
@@ -165,13 +134,13 @@ int main(void)
 	MX_SPI1_Init();
 	/* USER CODE BEGIN 2 */
 
+	/* Configure the screen */
 	ili_init();
 	ili_rotate_display(3);
 	ili_fill_screen(ILI_COLOR_DARKCYAN);
-
 	create_cartesian_axis_for_plot();
-//	sample_adc_and_filter_band_pass(0);
 
+	/* Start with the LOW PASS filter as default */
 	filter = LOW_PASS;
 
 	/* USER CODE END 2 */
