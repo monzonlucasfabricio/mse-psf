@@ -14,7 +14,9 @@
 #define Y_START_AXIS 80
 #define Y_END_AXIS 214
 
+void sample_adc_and_filter(uint16_t channel);
 void show_input_freq(uint16_t freq);
+void show_max_freq(uint16_t freq);
 void create_sine_wave_and_fir_freq(uint16_t tone);
 void create_sine_wave_2(uint16_t tone);
 void create_sine_wave_and_fir(uint16_t tone);

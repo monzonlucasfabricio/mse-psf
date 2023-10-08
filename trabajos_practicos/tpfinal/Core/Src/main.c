@@ -165,42 +165,13 @@ int main(void)
 
 	ili_init();
 	ili_rotate_display(3);
-	// Fiiling the entire screen with cyan color
 	ili_fill_screen(ILI_COLOR_DARKCYAN);
 
-	// // Fill a rectangle with green yellow
-	// ili_fill_rect(20, 0, 80, 80, ILI_COLOR_PINK);
-
-	// Draw a rectangle
-	// ili_draw_rectangle(5, 160, 50, 50, ILI_COLOR_BLACK);
-
-	// Write a string with transparent background at (0, 0) position with font `font_microsoft_16`
-//	ili_draw_string(10, 5, "PSF 2023 NOSE PORQUE NO ANDA ESTO", 0, &font_ubuntu_mono_24);
-
-	// Write a few characters at different positions
-	// for (int i = 0; i < 10; i++)
-	// 	ili_draw_char(rand() % 100 + 5, rand() % 100 + 60, (char)(rand() % 50 + 90), ILI_COLOR_RED, 0, &font_ubuntu_mono_24, 0);
-
-	// Write a string with solid background. Text color white, background color dark green
-	//  ili_draw_string_withbg(30, 10, "PSF 2023 - FIR FILTER", ILI_COLOR_WHITE, ILI_COLOR_DARKGREEN, &font_ubuntu_mono_24);
-
-	// Draw a line between any two points
-	// ili_draw_line(4, 18, 200, 150, 1, ILI_COLOR_RED);
-
-	// Draw a "thicc" line
-	// ili_draw_line(180, 2, 20, 250, 5, ILI_COLOR_BLUE);
-
-	/*To fill a specific area multiple times superfast, first set the area then fill it.*/
-	// Set an area on the display to be drawn
-//	ili_set_address_window(20, 30, 200, 200);
-	// Now fill the area many times quickly
-//	for (uint16_t i = 0; i < 6000; i++)
-//		ili_fill_color(ILI_COLOR_MAROON + i, (100+1) * (150+1));
-
 	create_cartesian_axis_for_plot();
-//	create_sine_wave_2(1000);
+	sample_adc_and_filter(0);
+//	create_sine_wave_2(100);
 //	create_sine_wave_and_fir_freq(100);
-	create_sine_wave_and_fir(100);
+//	create_sine_wave_and_fir(100);
 	/* USER CODE END 2 */
 
 	/* Infinite loop */
