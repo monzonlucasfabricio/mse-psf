@@ -34,10 +34,10 @@
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
 
-#define N_MUESTRAS  	412
+#define N_MUESTRAS  	411
 #define FREQ_MUESTREO	8000
 #define BITS 12
-#define CUTFREC 2000
+#define CUTFREC 1600
 
 /* Header added to the stream */
 struct header_struct {
@@ -50,7 +50,7 @@ struct header_struct {
   char     pos[4];
 }__attribute__ ((packed));
 
-struct header_struct header={"head",0,N_MUESTRAS,FREQ_MUESTREO,CUTFREC,h_LENGTH,"tail"};
+struct header_struct header={"*header*",0,N_MUESTRAS,FREQ_MUESTREO,CUTFREC,h_LENGTH,"end*"};
 
 // M + N - 1 = 512 -> N = 512 + 1 - 101 = 412
 // Filter size = 101
@@ -60,6 +60,10 @@ uint32_t tick   = 0   ;
 uint16_t tone   = 440 ;
 uint16_t B      = 4000;
 uint16_t sweept = 10;
+
+q15_t fftAbs  		[ ( N_MUESTRAS+h_LENGTH-1 )*1 ];
+q15_t fftInOut		[ ( N_MUESTRAS+h_LENGTH-1 )*2 ];
+int16_t adc			[ ( N_MUESTRAS+h_LENGTH-1 )*1 ];
 
 void SystemClock_Config(void);
 
@@ -80,9 +84,10 @@ int main(void)
 	uint16_t sample = 0;
 
 	arm_cfft_instance_q15 CS;
-	q15_t fftInOut	[ ( header.N+h_LENGTH-1 )*2 ];
-   	q15_t fftAbs  	[ ( header.N+h_LENGTH-1 )*1 ];
-	int16_t adc		[ ( header.N+h_LENGTH-1 )*1 ];
+
+	memset(fftAbs, 0, header.N+h_LENGTH-1);
+	memset(fftInOut, 0, (header.N+h_LENGTH-1)*2);
+	memset(adc, 0, header.N+h_LENGTH-1);
 
 	float t = 0;
 
@@ -116,7 +121,13 @@ int main(void)
 			header.id++;
 
 			/* Send the header in an Array */
-			uartWriteByteArray (&huart2, (uint8_t*)&header, sizeof(header));
+			uartWriteByteArray (&huart2, (uint8_t*)&header, sizeof(struct header_struct ));
+
+			for (sample=0; sample<(header.N+h_LENGTH-1);sample++ )
+			{
+				uartWriteByteArray ( &huart2 ,(uint8_t* )&adc[sample]      ,sizeof(adc[0]) );     // envia el sample ANTERIOR
+				uartWriteByteArray ( &huart2 ,(uint8_t* )&fftAbs[sample*1] ,sizeof(fftInOut[0])); // envia la fft del sample ANTERIO
+			}
 
 			/* Reset the samples */
 			sample = 0;
